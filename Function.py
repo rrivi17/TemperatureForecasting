@@ -140,7 +140,6 @@ def PrepareData(file,lag=3,horizon=1):
 
     x,y = [],[]
 
-
     data_gen = TimeseriesGenerator(dx, dy, length=lag, sampling_rate=1, batch_size=horizon, stride=1)
     for lx, ly in data_gen:
         x.append(lx[0])
