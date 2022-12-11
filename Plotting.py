@@ -247,7 +247,7 @@ def PlotAllColumns(data,figsize=(12,8),col=3,file='',kind='line',title=''):
     else:
         plt.show()'''
 
-def PlotAllColumns(data,figsize=(12,8),col=3,file='',kind='line',title=''):#dà errore se numero andrebbe bene
+def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',title=''):#dà errore se numero andrebbe bene
     plt.style.use('seaborn-notebook')
 
     if len(data.columns) % col==0:
@@ -255,20 +255,33 @@ def PlotAllColumns(data,figsize=(12,8),col=3,file='',kind='line',title=''):#dà 
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     else:
         row = math.ceil(len(data.columns) / col)
-        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+        #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
         axs = trim_axs(nrows=row, ncols=col, nfigs=len(data.columns))
     #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     if title != '':
         plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=20,fontname='Calibri')
-    #axs = trim_axs2(nrows=row, ncols=col, nfigs=len(data.columns))
-    bars = data.plot(ax=axs, subplots=True, rot=20, title=list(data.columns), kind=kind,
-                     fontsize=10)  # ,tick_label=[0])
 
-
+    if target_name=='':
+        bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8)
+    else:
+        i=0
+        for l in axs:
+            try:
+                for ax in l:
+                    data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
+                              x=data.columns[i],sharey=True,xlabel='')
+                    i+=1
+            except:
+                data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,
+                          x=data.columns[i],sharey=True,xlabel='')
+                i += 1
+    plt.tight_layout()
+    plt.subplots_adjust(hspace=1.1,wspace=0.4)
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
         plt.show()
+
 
 def BarhSingle(data,folder=''):
     metrics = data.index
