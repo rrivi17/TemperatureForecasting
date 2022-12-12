@@ -25,6 +25,24 @@ def CheckPath(file):
         isdir = os.path.isdir(path)
         return isdir
 
+def PlotSplit(x,y,cv,file=''):
+    plt.style.use('seaborn-notebook')
+    plt.figure()
+    plt.title("Time Series Split", fontdict={'family': 'Calibri', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    plt.yticks([n for n in range(1, cv.n_splits + 1)])
+    plt.ylabel('CV')
+    plt.xlabel('Date')
+    i = 1
+    for train, test in cv.split(x):
+        plt.plot(y.index[train], [i for k in range(len(train))], color='blue')
+        plt.plot(y.index[test], [i for k in range(len(test))], color='red')
+        i += 1
+    plt.legend(['Training set', 'Test set'])
+    if file != '' and CheckPath(f'{path}/{file}'):
+        plt.savefig(f'{path}/{file}')
+    else:
+        plt.show()
+
 def PlotTree(model,file=''):
     dot_data = tree.export_graphviz(model, filled=True)#esporto grafico in formato adatto
     pydot_graph = pydotplus.graph_from_dot_data(dot_data)
@@ -129,9 +147,15 @@ def LearningCurves(model, X, y,file=''):
 def ScatterMatrix(data,file=''):#non riesco a mettere titolo
     plt.style.use('seaborn-notebook')
     attributes = data.columns  # [lista colonne]
-    pd.plotting.scatter_matrix(data[attributes], figsize=(12, 8))#bello!
+    axes = pd.plotting.scatter_matrix(data[attributes], figsize=(12, 8))
+    #pd.plotting.scatter_matrix(data[attributes], figsize=(12, 8))
     plt.suptitle('Scatter Matrix',fontsize=20,color='#001568')
-    #plt.tight_layout()
+    for ax in axes.flatten():
+        ax.xaxis.label.set_rotation(90)
+        ax.yaxis.label.set_rotation(0)
+        ax.yaxis.label.set_ha('right')
+    plt.tight_layout()
+    plt.gcf().subplots_adjust(wspace=0, hspace=0)
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
@@ -249,6 +273,7 @@ def PlotAllColumns(data,figsize=(12,8),col=3,file='',kind='line',title=''):
 
 def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',title=''):#dà errore se numero andrebbe bene
     plt.style.use('seaborn-notebook')
+    plt.figure()
 
     if len(data.columns) % col==0:
         row=int(len(data.columns) / col)
@@ -259,7 +284,7 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
         axs = trim_axs(nrows=row, ncols=col, nfigs=len(data.columns))
     #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     if title != '':
-        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=20,fontname='Calibri')
+        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Calibri')
 
     if target_name=='':
         bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8)
@@ -269,14 +294,14 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
             try:
                 for ax in l:
                     data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
-                              x=data.columns[i],sharey=True,xlabel='')
+                              x=data.columns[i],sharey=True,xlabel='')#,figsize=(5,6))
                     i+=1
             except:
                 data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,
                           x=data.columns[i],sharey=True,xlabel='')
                 i += 1
     plt.tight_layout()
-    plt.subplots_adjust(hspace=1.1,wspace=0.4)
+    plt.subplots_adjust(hspace=1.5,wspace=0.4)
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
