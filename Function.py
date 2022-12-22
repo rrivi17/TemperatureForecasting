@@ -24,7 +24,7 @@ def SetArray2DRow(x,y):
         y = np.repeat(y, repeats=[time_step], axis=0)
         return(x,y)
     else:
-        print("l'array inserito non è 3D")
+        return "l'array inserito non è 3D"
 
 def SetArray2DCol(x,y):
     if len(x.shape)==3:
@@ -33,7 +33,7 @@ def SetArray2DCol(x,y):
         #y = np.repeat(y, repeats=[time_step], axis=0)
         return(x,y)
     else:
-        print("l'array inserito non è 3D")
+        return "l'array inserito non è 3D"
 
 def SaveModel(model,model_name):
     if CheckPath(f'{path}/{model_name}/SavedModel'):
@@ -54,7 +54,6 @@ def Evaluation(yu,yp,model_name,file='',fileGlobal='Evaluation/Evaluation'):
 
 
     ev = pd.DataFrame(ev.values(), index=ev.keys(), columns=['Evaluation'])
-    print(ev)
     if file != '' and CheckPath(f'{path}/{file}'):
         ev.to_csv(f'{path}/{file}.csv',float_format="%.3f")
         with open(f'{path}/{file}.txt', 'w') as f:
@@ -68,7 +67,6 @@ def Evaluation(yu,yp,model_name,file='',fileGlobal='Evaluation/Evaluation'):
 def PredCross(x,models,cv):
     y_pred = []
     i = 0
-    print(models)
     for train, test in cv.split(x):  # calcolo tutte le previsioni
         arr = models[i].predict(x[test[0]:test[-1]])
         for val in arr:
@@ -86,7 +84,6 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='Evaluation/Evaluati
     TimeSplit = TimeSeriesSplit(n_splits=n_split)
     #PlotSplit(x,TimeSplit)
 
-    #cross validate per calcolare metriche
     ev = cross_validate(model, x, y, cv=TimeSplit, scoring={'MSE': mse, 'MAE': mae, 'MAPE': mape, 'R2': r2},return_estimator=True)
 
     if mean==True:#alcolo valori medi
@@ -100,12 +97,22 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='Evaluation/Evaluati
                 if metric == 'MSE':
                     ris['RMSE'] = round((np.sqrt(ev[key]).mean()), 3)
         ev = pd.DataFrame(ris.values(), index=ris.keys(), columns=['Evaluation'])
+        #if file != '' and CheckPath(f'{path}/{fileGlobal}'):
+        EvaluationAll(ev, model_name, fileGlobal)
 
-    elif mean==False:
-         y_pred=PredCross(x,models=ev['estimator'],cv=TimeSplit)
+    elif mean==False:#salvo risultati tutto fold, prova
+         '''y_pred=PredCross(x,models=ev['estimator'],cv=TimeSplit)
          y=y[-len(y_pred):]
-         ris = Evaluation(y, y_pred, model_name='prova')
-         ev = pd.DataFrame(ris.values, index=ris.index, columns=['Evaluation'])
+         ris = Evaluation(y, y_pred, model_name='prova')'''
+         ris={}
+         for key in ev:
+             if 'test' in key:
+                 metric = key.split('_')[1].strip()
+                 ris[metric]=ev[key]
+                 if metric == 'MSE':
+                     ris['RMSE'] = np.round(np.sqrt(ev[key]),3)
+         ev = pd.DataFrame(ris.values(), index=ris.keys(), columns=['CV'+str(i) for i in range(1,len(ris['MSE'])+1)])
+         EvaluationAllSingle(ev, model_name)
 
     if file != '' and CheckPath(f'{path}/{file}'):
         ev.to_csv(f'{path}/{file}.csv', float_format="%.3f")
@@ -114,10 +121,28 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='Evaluation/Evaluati
     else:
         return ev
 
-    if fileGlobal != '' and CheckPath(f'{path}/{file}'):
-        EvaluationAll(ev, model_name, fileGlobal)
 
+def EvaluationAllSingle(ev,model_name,fileGlobal='Evaluation/EvaluationCrossSingle'):
+    for metric in ev.index:
+        ris=ev[ev.index==metric]
+        ris=pd.DataFrame(ris.values,columns=ev.columns,index=[f'{model_name}'])
 
+        try:
+            data = pd.read_csv(f'{path}/{fileGlobal}/{metric}.csv', index_col=[0])
+            if model_name in data.index:
+                data.loc[model_name]=ris.values
+            else:
+                data=pd.concat([data,ris])
+        except:
+            data = pd.DataFrame(ris.values, index=ris.index, columns=ris.columns)
+
+        if fileGlobal != '' and CheckPath(f'{path}/{fileGlobal}'):
+            data.to_csv(f'{path}/{fileGlobal}/{metric}.csv', float_format="%.3f")
+            with open(f'{path}/{fileGlobal}/{metric}.txt', 'w') as f:
+                data = data.to_string(header=True, index=True, float_format="%.3f")
+                f.write(data)
+        else:
+            return data
 
 def EvaluationAll(ev,model_name,fileGlobal='Evaluation/Evaluation'):
     try:
@@ -126,15 +151,18 @@ def EvaluationAll(ev,model_name,fileGlobal='Evaluation/Evaluation'):
     except:
         data = pd.DataFrame(ev.values, index=ev.index, columns=[f'{model_name}'])
 
-    data.to_csv(f'{path}/{fileGlobal}.csv', float_format="%.3f")
-    with open(f'{path}/{fileGlobal}.txt', 'w') as f:
-        data = data.to_string(header=True, index=True, float_format="%.3f")
-        f.write(data)
+    if fileGlobal != '' and CheckPath(f'{path}/{fileGlobal}'):
+        data.to_csv(f'{path}/{fileGlobal}.csv', float_format="%.3f")
+        with open(f'{path}/{fileGlobal}.txt', 'w') as f:
+            data = data.to_string(header=True, index=True, float_format="%.3f")
+            f.write(data)
+    else:
+        return data
 
-def PrepareData(file,lag=3,horizon=1):
+def PrepareData(file,lag=3,horizon=1,target='T'):
     df = pd.read_csv(f'{path}/{file}', index_col=[0])
     dates=df.index[lag:]
-    dy = df["T"]
+    dy = df[target]
     dx=df
 
     x,y = [],[]
@@ -174,16 +202,27 @@ def SaveGridSearch(param_grid,grid_result,folder=''):#salvo risultati gridsearch
             if key not in parametri:
                 parametri[key] = []
             try:
-                parametri[key].append(round(float(dict[key]), 4))
+                parametri[key].append(round(float(dict[key]), 3))
             except:
                 parametri[key].append(dict[key])
 
     d = {'Risultato medio': [round(float(i), 4) for i in grid_result.cv_results_['mean_test_score']], 'Std': [round(float(i), 4) for i in grid_result.cv_results_['std_test_score']]}
     d = d | parametri
-    best = {'Risultato medio: ': round(float(grid_result.best_score_), 4)}
 
+    best = {'Risultato medio: ': round(float(grid_result.best_score_), 4)}
     best = best | grid_result.best_params_
+    for key in best:#trasformo eventuali liste in stringhe
+        r=best[key]
+        if type(r)==list:
+            r=', '.join(map(str,r))
+            best[key]=r
     best = pd.DataFrame(best, index=["Best"])
+    #units risulta lista di liste
+    for key in d:  # trasformo eventuali liste in stringhe
+        print(d[key])
+        for i in range(len(d[key])):
+                if type(d[key][i])==list:
+                    d[key][i] = ', '.join(map(str,d[key][i]))
 
     df = pd.DataFrame(d, index=grid_result.cv_results_['rank_test_score'])
     df = df.sort_index()
