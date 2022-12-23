@@ -1,7 +1,6 @@
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'#tolgo info e warning
 import matplotlib.pyplot as plt
-from sklearn import preprocessing as pro
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -15,6 +14,7 @@ from tensorflow.keras.utils import plot_model
 import math
 from sklearn import tree
 import pydotplus
+from scipy.stats import wilcoxon
 
 path=sys.path[1]
 def CheckPath(file):
@@ -47,14 +47,14 @@ def PlotTree(model,file=''):
     dot_data = tree.export_graphviz(model, filled=True)#esporto grafico in formato adatto
     pydot_graph = pydotplus.graph_from_dot_data(dot_data)
     if file != '' and CheckPath(f'{path}/{file}'):
-        pydot_graph.write_pdf('decision_tree.pdf')
+        pydot_graph.write_png(f'{path}/{file}.png')
     else:
         plt.show()
 
 def ScatterPlot(x,y,xlabel='y_test',ylabel='y_pred',file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(10, 6))
-    plt.title('Scatter Plot', fontdict={'family': 'Calibri', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    #plt.title('Scatter Plot', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     #plt.ylim((min(y)-5,max(y) + 10))
@@ -68,7 +68,7 @@ def ScatterPlot(x,y,xlabel='y_test',ylabel='y_pred',file=''):
 def ScatterPlotOutliers(x,y,xlabel='y_test',ylabel='y_pred',threshold=20,file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(10, 6))
-    plt.title('Scatter Plot', fontdict={'family': 'Calibri', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    plt.title('Scatter Plot', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     condition=abs(x-y)>threshold
@@ -86,7 +86,7 @@ def ResidualPlot(y_test,y_pred,file=''):
     ris=pd.DataFrame(ris)
 
     plt.figure(figsize=(10, 6))
-    plt.title('Residual Plot',fontdict={'family': 'Calibri', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    plt.title('Residual Plot',fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     sns.residplot(x=ris['y_test'], y=ris['y_pred'])
 
     plt.tight_layout()
@@ -104,11 +104,12 @@ def PlotLoss(history,file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(8, 4))
     # loss=model.history.history['loss']
-    plt.plot(history.history['loss'])
+    plt.plot(history.history['loss'],color='#001568')
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.yscale('log', base=10)
 
+    plt.tight_layout()
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
@@ -168,13 +169,14 @@ def CorrelationMatrix(data,file='',method='pearson',diag=True):
     corr = data.corr(method=method)
     #così stampo solo la metà della matrice, ok
     if diag:
+        corr = corr.drop(columns=corr.columns[-1])
         mask=np.triu((np.ones_like(corr, dtype=bool)))
-        sns.heatmap(corr, mask=mask, cmap=sns.diverging_palette(220, 10, as_cmap=True), square=True, ax=ax, annot=True,
+        sns.heatmap(corr[1:], mask=mask[1:], cmap=sns.diverging_palette(220, 10, as_cmap=True), square=True, ax=ax, annot=True,
                     fmt=".2f")
     else:
         sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True, fmt=".2f")
    # sns.heatmap(corr, mask=mask, cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True,fmt=".2f")
-    ax.set_title('Correlation Matrix', fontsize=20, color='#001568')
+    #ax.set_title('Correlation Matrix', fontsize=20, color='#001568')
     plt.tight_layout()
 
     if file != '' and CheckPath(f'{path}/{file}'):
@@ -186,7 +188,7 @@ def TrainValAcc(history,file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(10, 7), facecolor='#FFFFCC')
     plt.axes().set_facecolor('#F8F8FF')
-    plt.title('Training and validation accuracy',fontdict={'family': 'Times New Roman', 'color': 'darkred', 'weight': 'normal', 'size': 20,'style': 'italic'})
+    plt.title('Training and validation accuracy',fontdict={'family': 'Arial', 'color': 'darkred', 'weight': 'normal', 'size': 20,'style': 'italic'})
     plt.xlabel('Epochs', fontsize=15)
     plt.ylabel('Loss', fontsize=15)
 
@@ -211,23 +213,28 @@ def TrainValAcc(history,file=''):
 
 def TrainValLoss(history,file=''):
     plt.style.use('seaborn-notebook')
-    plt.figure(figsize=(10, 7), facecolor='#FFFFCC')
-    plt.axes().set_facecolor('#F8F8FF')
-    plt.title('Training and validation loss', fontdict={'family': 'Times New Roman', 'color': 'darkred', 'weight': 'normal', 'size': 20, 'style': 'italic'})
+    plt.figure(figsize=(10, 7))# facecolor='#FFFFCC')
+    #plt.axes().set_facecolor('#F8F8FF')
+    plt.title('Training and validation loss', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     plt.xlabel('Epochs', fontsize=15)
     plt.ylabel('Loss', fontsize=15)
 
     loss = history.history['loss']
     val_loss = history.history['val_loss']
     epochs = range(1, len(loss) + 1)
-    plt.plot(epochs, loss, 'bo', label='Training loss')
-    plt.plot(epochs, val_loss, 'b', label='Validation loss')
 
+    plt.plot(epochs, loss, label='Training loss',color='#001568')
+    plt.plot(epochs, val_loss, label='Validation loss',color='red')
+
+    plt.yscale('log', base=10)
+
+    plt.tight_layout()
     plt.legend()
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
         plt.show()
+
 def trim_axs(nrows,ncols,nfigs):
     axs = []
 
@@ -280,11 +287,11 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     else:
         row = math.ceil(len(data.columns) / col)
-        #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
         axs = trim_axs(nrows=row, ncols=col, nfigs=len(data.columns))
     #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     if title != '':
-        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Calibri')
+        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Arial')
 
     if target_name=='':
         bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8)
@@ -294,14 +301,17 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
             try:
                 for ax in l:
                     data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
-                              x=data.columns[i],sharey=True,xlabel='')#,figsize=(5,6))
+                              x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568')
+                             # fontdict={'color': '#001568','fontfamily':'Arial'})
+                    #ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
+                    #ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
                     i+=1
             except:
                 data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,
-                          x=data.columns[i],sharey=True,xlabel='')
+                          x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568')
                 i += 1
+
     plt.tight_layout()
-    plt.subplots_adjust(hspace=1.5,wspace=0.4)
     if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
@@ -313,10 +323,10 @@ def BarhSingle(data,folder=''):
     models = data.columns
     for metric in metrics:
         plt.figure(figsize=(8, 4))
-        plt.title(f'{metric}', fontdict={'family': 'Calibri', 'color': '#001568', 'weight': 'normal', 'size': 15})
+        plt.title(f'{metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
         data = data.sort_values(by=[f'{metric}'], axis=1)  # ordino valori in alto il più alto
         bars = plt.barh(models, width=data.loc[metric])
-        plt.bar_label(bars, label_type='center', fontsize=15, fontname='Calibri', color='white')
+        plt.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
         plt.tight_layout()
         if folder != '' and CheckPath(f'{path}/{folder}'):
             plt.savefig(f'{path}/{folder}/{metric}')
@@ -324,13 +334,12 @@ def BarhSingle(data,folder=''):
             plt.show()
 
 def Graph(y_test,yp_test,file=''):
-    #plt.style.use('seaborn-dark')
     plt.clf()
     plt.style.use('seaborn-notebook')
     #plt.figure(figsize=(10, 7), facecolor='#FFFFCC')
     plt.figure(figsize=(12, 8))
     #plt.axes().set_facecolor('#F8F8FF')
-    plt.title('Daily Temperature Prediction', fontdict={'family': 'Times New Roman', 'color': '#001568','weight': 'normal', 'size': 20})
+    plt.title('Daily Temperature Prediction', fontdict={'family': 'Arial', 'color': '#001568','weight': 'normal', 'size': 20})
     plt.xlabel("Date", fontsize=15)
     plt.ylabel('Temperature', fontsize=15)
     #plt.xticks(rotation=45, ha='right')
@@ -344,3 +353,51 @@ def Graph(y_test,yp_test,file=''):
         plt.savefig(f'{path}/{file}')
     else:
         plt.show()
+
+def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wilcoxon',col=2,figsize=(15,10)):
+    if len(metrics) % col==0:
+        row=int( len(metrics) / col)
+        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+    else:
+        row = math.ceil( len(metrics) / col)
+        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+        axs = trim_axs(nrows=row, ncols=col, nfigs=len(metrics))
+    if title != '':
+        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'}, fontsize=17, fontname='Arial')
+
+
+    n_ax=-1
+    for metric in metrics:
+        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
+        r = {}
+        n_ax+=1
+        for i in range(len(data.index)):
+            w = []
+            model1 = data.index[i]
+            val1 = data[data.index == model1].values[0]
+            for model in data.index:
+                if model != model1:
+                    val2 = data[data.index == model].values[0]
+                    w.append(wilcoxon(val1, val2)[1])
+                elif model == model1:
+                    w.append(0)
+            r[model1] = w  # modello:valori wil
+
+        ris = pd.DataFrame(r, index=data.index)
+        ax = axs[n_ax]
+        ax.set_title(f'{metric}',fontdict={'color': '#001568','fontfamily':'Arial'})
+
+        ris = ris.drop(columns=ris.columns[-1])
+        mask = np.triu((np.ones_like(ris, dtype=bool)))
+        sns.heatmap(ris[1:], mask=mask[1:], cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True), square=False, ax=ax,annot=True, fmt=".3f")
+
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=12, fontname='Arial')
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=12, fontname='Arial')
+
+    plt.subplots_adjust(left=0.145,bottom=0.16,wspace=1,hspace=1,top=0.9)
+
+    if file != '' and CheckPath(f'{path}/{file}'):  # salva plot
+        plt.savefig(f'{path}/{file}')
+    else:
+        plt.show()
+
