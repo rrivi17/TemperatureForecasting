@@ -14,6 +14,7 @@ from tensorflow.keras.utils import plot_model
 import math
 from sklearn import tree
 import pydotplus
+from Function import ComputeTest
 from scipy.stats import wilcoxon
 
 path=sys.path[1]
@@ -369,21 +370,9 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wi
     n_ax=-1
     for metric in metrics:
         data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
-        r = {}
-        n_ax+=1
-        for i in range(len(data.index)):
-            w = []
-            model1 = data.index[i]
-            val1 = data[data.index == model1].values[0]
-            for model in data.index:
-                if model != model1:
-                    val2 = data[data.index == model].values[0]
-                    w.append(wilcoxon(val1, val2)[1])
-                elif model == model1:
-                    w.append(0)
-            r[model1] = w  # modello:valori wil
+        n_ax += 1
+        ris = ComputeTest(data, test='wilcoxon')
 
-        ris = pd.DataFrame(r, index=data.index)
         ax = axs[n_ax]
         ax.set_title(f'{metric}',fontdict={'color': '#001568','fontfamily':'Arial'})
 
@@ -395,6 +384,41 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wi
         ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=12, fontname='Arial')
 
     plt.subplots_adjust(left=0.145,bottom=0.16,wspace=1,hspace=1,top=0.9)
+
+    if file != '' and CheckPath(f'{path}/{file}'):  # salva plot
+        plt.savefig(f'{path}/{file}')
+    else:
+        plt.show()
+
+def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='Ttest',col=2,figsize=(15,10)):
+    if len(metrics) % col==0:
+        row=int( len(metrics) / col)
+        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+    else:
+        row = math.ceil( len(metrics) / col)
+        fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+        axs = trim_axs(nrows=row, ncols=col, nfigs=len(metrics))
+    if title != '':
+        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'}, fontsize=17, fontname='Arial')
+
+    n_ax=-1
+    for metric in metrics:
+        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
+        n_ax+=1
+        ris = ComputeTest(data, test='Ttest')
+
+        ax = axs[n_ax]
+        ax.set_title(f'{metric}', fontdict={'color': '#001568', 'fontfamily': 'Arial'})
+
+        ris = ris.drop(columns=ris.columns[-1])
+        mask = np.triu((np.ones_like(ris, dtype=bool)))
+        sns.heatmap(ris[1:], mask=mask[1:], cmap=sns.light_palette("seagreen", as_cmap=True, reverse=True),
+                    square=False, ax=ax, annot=True, fmt=".3f")
+
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=12, fontname='Arial')
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=12, fontname='Arial')
+
+    plt.subplots_adjust(left=0.145, bottom=0.16, wspace=1, hspace=1, top=0.9)
 
     if file != '' and CheckPath(f'{path}/{file}'):  # salva plot
         plt.savefig(f'{path}/{file}')
