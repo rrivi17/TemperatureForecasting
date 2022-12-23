@@ -6,6 +6,9 @@ from sklearn.metrics import mean_squared_error,mean_absolute_percentage_error,r2
 import numpy as np
 from keras.preprocessing.sequence import TimeseriesGenerator
 from sklearn.model_selection import TimeSeriesSplit,cross_validate
+import seaborn as sns
+import matplotlib.pyplot as plt
+from scipy.stats import wilcoxon
 import sys
 path=sys.path[1]
 
@@ -73,7 +76,7 @@ def PredCross(x,models,cv):
             y_pred.append(val)
     return y_pred
 
-def EvaluationCross(model,x,y,model_name,file='',fileGlobal='Evaluation/EvaluationCross',n_split=5,mean=True):
+def EvaluationCross(model,x,y,model_name,file='',fileGlobal='EvaluationCross/EvaluationCross',n_split=5,mean=True):
     '''mean =true se aggrego valori con la media false se calcolo tutte le previsioni e le aggrego prima di calcolare metriche'''
     #y dataframe con date
     mse = make_scorer(mean_squared_error)
@@ -122,7 +125,7 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='Evaluation/Evaluati
         return ev
 
 
-def EvaluationAllSingle(ev,model_name,fileGlobal='Evaluation/EvaluationCrossSingle'):
+def EvaluationAllSingle(ev,model_name,fileGlobal='EvaluationCross/EvaluationCrossSingle'):
     for metric in ev.index:
         ris=ev[ev.index==metric]
         ris=pd.DataFrame(ris.values,columns=ev.columns,index=[f'{model_name}'])
@@ -237,6 +240,45 @@ def SaveGridSearch(param_grid,grid_result,folder=''):#salvo risultati gridsearch
         best = best.to_string(header=True, index=True,float_format="%.4f")
         f.write(best)
 
+def Wilcoxon(metrics,file='EvaluationCross/Wilcoxon',diag=True):
+    for metric in metrics:
+        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
+        r = {}
+
+        for i in range(len(data.index)):
+            w = []
+            model1 = data.index[i]
+            val1 = data[data.index == model1].values[0]
+            for model in data.index:
+                if model != model1:  # and model not in Used:
+                    val2 = data[data.index == model].values[0]
+                    w.append(wilcoxon(val1, val2)[1])
+                elif model == model1:
+                    w.append(0)
+            r[model1] = w  # modello:valori wil
+
+        ris = pd.DataFrame(r, index=data.index)
+        if file != '' and CheckPath(f'{path}/{file}'): # salva plot
+            plt.style.use('seaborn-notebook')
+            f, ax = plt.subplots(figsize=(10, 8))
+            plt.title(f'Wilcoxon {metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
+            if diag:
+                ris = ris.drop(columns=ris.columns[-1])
+                mask = np.triu((np.ones_like(ris, dtype=bool)))
+                sns.heatmap(ris[1:], mask=mask[1:], cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True), square=False, ax=ax, annot=True, fmt=".3f")
+            else:
+                 sns.heatmap(ris, mask=np.zeros_like(ris, dtype=np.bool), cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True),square=True, ax=ax, annot=True, fmt=".3f")
+
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
+            ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
+            plt.tight_layout()
+            plt.savefig(f'{path}/{file}/Graph/{metric}')
+
+            ris.to_csv(f'{path}/{file}/{metric}.csv', float_format="%.3f")
+            with open(f'{path}/{file}/{metric}.txt', 'w') as f:
+                f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
+        else:
+            return ris
 
 if __name__ == '__main__':
     x, y = PrepareData("JenaClimate.csv")
