@@ -76,9 +76,8 @@ def PredCross(x,models,cv):
             y_pred.append(val)
     return y_pred
 
-def EvaluationCross(model,x,y,model_name,file='',fileGlobal='EvaluationCross/EvaluationCross',n_split=5,mean=True):
-    '''mean =true se aggrego valori con la media false se calcolo tutte le previsioni e le aggrego prima di calcolare metriche'''
-    #y dataframe con date
+
+def EvaluationCross(model,x,y,model_name,file='',fileCV='',fileGlobal='EvaluationCross/EvaluationCross',fileGlobalCV='EvaluationCross/EvaluationCrossSingle',n_split=5,CV=True):
     mse = make_scorer(mean_squared_error)
     mae = make_scorer(mean_absolute_error)
     r2 = make_scorer(r2_score)
@@ -89,21 +88,26 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='EvaluationCross/Eva
 
     ev = cross_validate(model, x, y, cv=TimeSplit, scoring={'MSE': mse, 'MAE': mae, 'MAPE': mape, 'R2': r2},return_estimator=True)
 
-    if mean==True:#alcolo valori medi
-        ris = {}
-        for key in ev:
-            if 'test' in key:
-                metric = key.split('_')[1].strip()
-                ris[metric] = round(ev[key].mean(), 3)
-                if metric == 'MAPE':
-                    ris[metric] = round((ev[key]).mean(), 3)
-                if metric == 'MSE':
-                    ris['RMSE'] = round((np.sqrt(ev[key]).mean()), 3)
-        ev = pd.DataFrame(ris.values(), index=ris.keys(), columns=['Evaluation'])
-        #if file != '' and CheckPath(f'{path}/{fileGlobal}'):
-        EvaluationAll(ev, model_name, fileGlobal)
+    ris = {}
+    for key in ev:
+        if 'test' in key:
+            metric = key.split('_')[1].strip()
+            ris[metric] = round(ev[key].mean(), 3)
+            if metric == 'MAPE':
+                ris[metric] = round((ev[key]).mean(), 3)
+            if metric == 'MSE':
+                ris['RMSE'] = round((np.sqrt(ev[key]).mean()), 3)
+    ris = pd.DataFrame(ris.values(), index=ris.keys(), columns=['Evaluation'])
+    EvaluationAll(ris, model_name, fileGlobal)
 
-    elif mean==False:#salvo risultati tutto fold, prova
+    if file != '' and CheckPath(f'{path}/{file}'):
+        ris.to_csv(f'{path}/{file}.csv', float_format="%.3f")
+        with open(f'{path}/{file}.txt', 'w') as f:
+            f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
+    else:
+        print(ris)
+
+    if CV:#salvo risultati tutto fold, prova
          '''y_pred=PredCross(x,models=ev['estimator'],cv=TimeSplit)
          y=y[-len(y_pred):]
          ris = Evaluation(y, y_pred, model_name='prova')'''
@@ -114,16 +118,15 @@ def EvaluationCross(model,x,y,model_name,file='',fileGlobal='EvaluationCross/Eva
                  ris[metric]=ev[key]
                  if metric == 'MSE':
                      ris['RMSE'] = np.round(np.sqrt(ev[key]),3)
-         ev = pd.DataFrame(ris.values(), index=ris.keys(), columns=['CV'+str(i) for i in range(1,len(ris['MSE'])+1)])
-         EvaluationAllSingle(ev, model_name)
+         ris = pd.DataFrame(ris.values(), index=ris.keys(), columns=['CV'+str(i) for i in range(1,len(ris['MSE'])+1)])
+         EvaluationAllSingle(ris, model_name,fileGlobalCV)
 
-    if file != '' and CheckPath(f'{path}/{file}'):
-        ev.to_csv(f'{path}/{file}.csv', float_format="%.3f")
-        with open(f'{path}/{file}.txt', 'w') as f:
-            f.write(ev.to_string(header=True, index=True, float_format="%.3f"))
+         if fileCV!= '' and CheckPath(f'{path}/{fileCV}'):
+            ris.to_csv(f'{path}/{fileCV}.csv', float_format="%.3f")
+            with open(f'{path}/{fileCV}.txt', 'w') as f:
+                f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
     else:
-        return ev
-
+        print(ris)
 
 def EvaluationAllSingle(ev,model_name,fileGlobal='EvaluationCross/EvaluationCrossSingle'):
     for metric in ev.index:
@@ -277,8 +280,8 @@ def Wilcoxon(metrics,file='EvaluationCross/Wilcoxon',diag=True):
             else:
                  sns.heatmap(ris, mask=np.zeros_like(ris, dtype=np.bool), cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True),square=True, ax=ax, annot=True, fmt=".3f")
 
-            ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
-            ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=11, fontname='Arial')
+            ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=11, fontname='Arial')
             plt.tight_layout()
             plt.savefig(f'{path}/{file}/Graph/{metric}')
 
@@ -304,8 +307,8 @@ def Ttest(metrics,file='EvaluationCross/Ttest',diag=True):
             else:
                  sns.heatmap(ris, mask=np.zeros_like(ris, dtype=np.bool), cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True),square=True, ax=ax, annot=True, fmt=".3f")
 
-            ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
-            ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
+            ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=11, fontname='Arial')
+            ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=11, fontname='Arial')
             plt.tight_layout()
             plt.savefig(f'{path}/{file}/Graph/{metric}')
 
