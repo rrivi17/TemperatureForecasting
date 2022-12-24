@@ -87,7 +87,7 @@ def ResidualPlot(y_test,y_pred,file=''):
     ris=pd.DataFrame(ris)
 
     plt.figure(figsize=(10, 6))
-    plt.title('Residual Plot',fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    #plt.title('Residual Plot',fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     sns.residplot(x=ris['y_test'], y=ris['y_pred'])
 
     plt.tight_layout()
@@ -126,25 +126,6 @@ def Hist(column, file=''):
         plt.savefig(f'{path}/{file}')
     else:
         plt.show()
-
-def LearningCurves(model, X, y,file=''):
- X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
- train_errors, val_errors = [], []
- for m in range(1, len(X_train)):
-    model.fit(X_train[:m], y_train[:m])
-    y_train_predict = model.predict(X_train[:m])
-    y_val_predict = model.predict(X_val)
-    train_errors.append(mean_squared_error(y_train[:m], y_train_predict))
-    val_errors.append(mean_squared_error(y_val, y_val_predict))
- plt.plot(np.sqrt(train_errors), "r-+", linewidth=2, label="train")
- plt.plot(np.sqrt(val_errors), "b-", linewidth=3, label="val")
- plt.yscale('log', base=10)
- plt.xscale('log', base=10)
- plt.legend()
- if file != '' and CheckPath(f'{path}/{file}'):
-     plt.savefig(f'{path}/{file}')
- else:
-     plt.show()
 
 def ScatterMatrix(data,file=''):#non riesco a mettere titolo
     plt.style.use('seaborn-notebook')
@@ -216,7 +197,7 @@ def TrainValLoss(history,file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(10, 7))# facecolor='#FFFFCC')
     #plt.axes().set_facecolor('#F8F8FF')
-    plt.title('Training and validation loss', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
+    #plt.title('Training and validation loss', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
     plt.xlabel('Epochs', fontsize=15)
     plt.ylabel('Loss', fontsize=15)
 
@@ -295,20 +276,20 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
         plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Arial')
 
     if target_name=='':
-        bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8)
+        bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8,legend=False)
     else:
         i=0
         for l in axs:
             try:
                 for ax in l:
                     data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
-                              x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568')
+                              x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568',legend=False)
                              # fontdict={'color': '#001568','fontfamily':'Arial'})
                     #ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
                     #ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
                     i+=1
             except:
-                data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,
+                data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,legend=False,
                           x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568')
                 i += 1
 
@@ -321,13 +302,17 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
 
 def BarhSingle(data,folder=''):
     metrics = data.index
-    models = data.columns
+
     for metric in metrics:
         plt.figure(figsize=(8, 4))
+        #fig,ax=plt.subplots(figsize=(8, 4))
+
         plt.title(f'{metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
-        data = data.sort_values(by=[f'{metric}'], axis=1)  # ordino valori in alto il più alto
+        data = data.sort_values(by=[f'{metric}'], axis=1)
+        models = data.columns
         bars = plt.barh(models, width=data.loc[metric])
         plt.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
+
         plt.tight_layout()
         if folder != '' and CheckPath(f'{path}/{folder}'):
             plt.savefig(f'{path}/{folder}/{metric}')
@@ -420,7 +405,7 @@ def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='Ttes
 
     plt.subplots_adjust(left=0.145, bottom=0.16, wspace=1, hspace=1, top=0.9)
 
-    if file != '' and CheckPath(f'{path}/{file}'):  # salva plot
+    if file != '' and CheckPath(f'{path}/{file}'):
         plt.savefig(f'{path}/{file}')
     else:
         plt.show()
