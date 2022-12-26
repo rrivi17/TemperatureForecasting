@@ -1,0 +1,2 @@
+,Risultato medio: ,min_samples_split,min_samples_leaf,max_depth,criterion
+Best,0.8942,9,20,20,squared_error
