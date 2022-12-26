@@ -166,6 +166,7 @@ def CorrelationMatrix(data,file='',method='pearson',diag=True):
     else:
         plt.show()
 
+
 def TrainValAcc(history,file=''):
     plt.style.use('seaborn-notebook')
     plt.figure(figsize=(10, 7), facecolor='#FFFFCC')
