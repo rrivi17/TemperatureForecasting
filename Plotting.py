@@ -156,7 +156,7 @@ def CorrelationMatrix(data,file='',method='pearson',diag=True):
         sns.heatmap(corr[1:], mask=mask[1:], cmap=sns.diverging_palette(220, 10, as_cmap=True), square=True, ax=ax, annot=True,
                     fmt=".2f")
     else:
-        sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True, fmt=".2f")
+        sns.heatmap(corr, mask=np.zeros_like(corr, dtype=bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True, fmt=".2f")
    # sns.heatmap(corr, mask=mask, cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True,fmt=".2f")
     #ax.set_title('Correlation Matrix', fontsize=20, color='#001568')
     plt.tight_layout()
@@ -340,7 +340,7 @@ def Graph(y_test,yp_test,file=''):
     else:
         plt.show()
 
-def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wilcoxon',col=2,figsize=(15,10)):
+def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='',col=2,figsize=(15,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -354,7 +354,7 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wi
 
     n_ax=-1
     for metric in metrics:
-        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
+        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCross/{metric}.csv', index_col=[0])
         n_ax += 1
         ris = ComputeTest(data, test='wilcoxon')
 
@@ -375,7 +375,7 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='Wi
     else:
         plt.show()
 
-def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='Ttest',col=2,figsize=(15,10)):
+def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='',col=2,figsize=(15,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -388,7 +388,7 @@ def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='Ttes
 
     n_ax=-1
     for metric in metrics:
-        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossSingle/{metric}.csv', index_col=[0])
+        data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCross/{metric}.csv', index_col=[0])
         n_ax+=1
         ris = ComputeTest(data, test='Ttest')
 
