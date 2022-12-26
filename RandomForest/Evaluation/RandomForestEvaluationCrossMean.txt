@@ -1,0 +1,6 @@
+      Evaluation
+MSE        5.381
+RMSE       2.316
+MAE        1.807
+MAPE       1.005
+R2         0.906
