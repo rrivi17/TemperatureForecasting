@@ -1,0 +1,2 @@
+,Risultato medio: ,n_estimators,min_samples_split,min_samples_leaf,criterion
+Best,0.911,300,3,9,squared_error
