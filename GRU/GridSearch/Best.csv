@@ -1,0 +1,2 @@
+,Risultato medio: ,GRU__units,GRU__recurrent_activation,GRU__optimizer,GRU__n_layers,GRU__epochs,GRU__delta,GRU__batch_size,GRU__activation
+Best,0.9129,"160, 120",selu,adam,2,30,1.35,25,selu
