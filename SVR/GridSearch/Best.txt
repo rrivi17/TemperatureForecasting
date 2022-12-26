@@ -1,0 +1,2 @@
+      Risultato medio:  svr__kernel  svr__gamma  svr__epsilon  svr__degree  svr__C
+Best             0.9136        poly      0.3900        0.3300            3  0.8000
