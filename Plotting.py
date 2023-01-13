@@ -7,15 +7,12 @@ import pandas as pd
 import os
 import matplotlib.gridspec as gridspec
 import datetime as dt
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import train_test_split
 import sys
 from tensorflow.keras.utils import plot_model
 import math
 from sklearn import tree
 import pydotplus
 from Function import ComputeTest
-from scipy.stats import wilcoxon
 
 path=sys.path[1]
 def CheckPath(file):
@@ -127,9 +124,9 @@ def Hist(column, file=''):
     else:
         plt.show()
 
-def ScatterMatrix(data,file=''):#non riesco a mettere titolo
+def ScatterMatrix(data,file=''):
     plt.style.use('seaborn-notebook')
-    attributes = data.columns  # [lista colonne]
+    attributes = data.columns
     axes = pd.plotting.scatter_matrix(data[attributes], figsize=(12, 8))
     #pd.plotting.scatter_matrix(data[attributes], figsize=(12, 8))
     plt.suptitle('Scatter Matrix',fontsize=20,color='#001568')
@@ -149,7 +146,6 @@ def CorrelationMatrix(data,file='',method='pearson',diag=True):
     plt.style.use('seaborn-notebook')
     f, ax = plt.subplots(figsize=(10, 8))
     corr = data.corr(method=method)
-    #così stampo solo la metà della matrice, ok
     if diag:
         corr = corr.drop(columns=corr.columns[-1])
         mask=np.triu((np.ones_like(corr, dtype=bool)))
@@ -157,7 +153,6 @@ def CorrelationMatrix(data,file='',method='pearson',diag=True):
                     fmt=".2f")
     else:
         sns.heatmap(corr, mask=np.zeros_like(corr, dtype=bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True, fmt=".2f")
-   # sns.heatmap(corr, mask=mask, cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax, annot=True,fmt=".2f")
     #ax.set_title('Correlation Matrix', fontsize=20, color='#001568')
     plt.tight_layout()
 
@@ -219,60 +214,34 @@ def TrainValLoss(history,file=''):
         plt.show()
 
 def trim_axs(nrows,ncols,nfigs):
-    axs = []
+    axs=[]
 
-    m = nfigs % ncols
-    m = range(1, ncols + 1)[-m]  # subdivision of columns
-    gs = gridspec.GridSpec(nrows, m * ncols)
+    m=nfigs%ncols
+    m=range(1, ncols +1)[-m]
+    gs=gridspec.GridSpec(nrows, m*ncols)
     for i in range(0, nfigs):
-        row = i // ncols
-        col = i % ncols
+        row=i // ncols
+        col=i%ncols
 
-        if row == nrows - 1:  # center only last row
-            off = int(m * (ncols - nfigs % ncols) / 2)
+        if row == nrows-1: #accentro ultima colonna
+            off=int(m*(ncols-nfigs%ncols)/2)
         else:
-            off = 0
-        ax = plt.subplot(gs[row, m * col + off: m * (col + 1) + off])
+            off=0
+        ax = plt.subplot(gs[row, m*col+off: m*(col+1)+off])
         axs.append(ax)
     return axs
-'''def trim_axs(axs, N):
-    """little helper to massage the axs list to have correct length..."""
-    axs = axs.flat
-    for ax in axs[N:]:
-        ax.remove()
-    return axs[:N]
 
-def PlotAllColumns(data,figsize=(12,8),col=3,file='',kind='line',title=''):
-    plt.style.use('seaborn-notebook')
-
-    row = math.ceil(len(data.columns) / col)
-    #sharex='col'
-    fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=True, tight_layout=True)
-
-    if title != '':
-        plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=20,fontname='Calibri Light')
-
-    axs = trim_axs(axs, len(data.columns))
-    data.plot(ax=axs, subplots=True, rot=20, title=list(data.columns),kind=kind,fontsize=10)
-    plt.subplots_adjust()
-
-    if file != '' and CheckPath(f'{path}/{file}'):
-        plt.savefig(f'{path}/{file}')
-    else:
-        plt.show()'''
-
-def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',title=''):#dà errore se numero andrebbe bene
+def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',title=''):
     plt.style.use('seaborn-notebook')
     plt.figure()
-
-    if len(data.columns) % col==0:
+    if len(data.columns)%col==0:
         row=int(len(data.columns) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
     else:
         row = math.ceil(len(data.columns) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
         axs = trim_axs(nrows=row, ncols=col, nfigs=len(data.columns))
-    #fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
+
     if title != '':
         plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Arial')
 
@@ -285,9 +254,6 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
                 for ax in l:
                     data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
                               x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568',legend=False)
-                             # fontdict={'color': '#001568','fontfamily':'Arial'})
-                    #ax.set_xticklabels(ax.get_xticklabels(), rotation=0, fontsize=15, fontname='Arial')
-                    #ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
                     i+=1
             except:
                 data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,legend=False,
@@ -301,7 +267,7 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
         plt.show()
 
 
-def BarhSingle(data,folder=''):
+def Barh(data,folder=''):
     metrics = data.index
 
     for metric in metrics:
