@@ -57,8 +57,6 @@ def CrossValNaive(x,cv,y_pred,model_name='NaiveForecast',fileMean='',fileGlobal=
         return ev
 
 
-
-
 if __name__ == '__main__':
     x,y=PrepareData("JenaClimate.csv")
 
