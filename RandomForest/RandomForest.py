@@ -10,8 +10,8 @@ if __name__ == '__main__':
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=0, shuffle=False)
 
-    x_train, y_train = SetArray2DCol(x_train, y_train)
-    x_test, y_test = SetArray2DCol(x_test, y_test)
+    x_train = SetArray2DCol(x_train)
+    x_test = SetArray2DCol(x_test)
 
     model = RandomForestRegressor(criterion="squared_error", random_state=1, min_samples_split=3,min_samples_leaf=9, n_estimators=300)
     model.fit(x_train, y_train)
@@ -28,6 +28,5 @@ if __name__ == '__main__':
     x = np.concatenate((x_train, x_test))
     y = np.concatenate((y_train, y_test))
 
-    #EvaluationCross(model,x,y,model_name='RandomForest',file="RandomForest/Evaluation/RandomForestEvaluationCross",fileCV="RandomForest/Evaluation/RandomForestEvaluationCrossSingle")
     EvaluationCross(model,x,y,model_name='RandomForest',file="RandomForest/Evaluation/RandomForestEvaluationCross",fileMean="RandomForest/Evaluation/RandomForestEvaluationCrossMean")
 
