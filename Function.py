@@ -45,15 +45,15 @@ def SetArray2DRow(x,y):
         y = np.repeat(y, repeats=[time_step], axis=0)
         return(x,y)
     else:
-        return "l'array inserito non è 3D"
+        return "array inserito non 3D"
 
-def SetArray2DCol(x,y):
+def SetArray2DCol(x):
     if len(x.shape)==3:
         n_row, time_step, n_feature = x.shape
         x = x.reshape((n_row , n_feature* time_step))
-        return(x,y)
+        return(x)
     else:
-        return "l'array inserito non è 3D"
+        return "array inserito non 3D"
 
 def SaveModel(model,model_name):
     if CheckPath(f'{path}/{model_name}/SavedModel'):
@@ -72,7 +72,6 @@ def Evaluation(yu,yp,model_name='',file='',fileGlobal='Evaluation/Evaluation'):
     r2 = r2_score(yu, yp)
     ev['R2']=r2
 
-
     ev = pd.DataFrame(ev.values(), index=ev.keys(), columns=['Evaluation'])
     if file != '' and CheckPath(f'{path}/{file}'):
         ev.to_csv(f'{path}/{file}.csv',float_format="%.3f")
@@ -80,7 +79,7 @@ def Evaluation(yu,yp,model_name='',file='',fileGlobal='Evaluation/Evaluation'):
             f.write(ev.to_string(header=True, index=True,float_format="%.3f"))
     else:
         return ev
-    #ev = pd.DataFrame(ev.values(), index=ris.keys(), columns=['Evaluation'])
+
     if fileGlobal != '' and model_name!='' and CheckPath(f'{path}/{file}'):
         EvaluationAll(ev, model_name, fileGlobal)
 
@@ -93,57 +92,6 @@ def PredCross(x,models,cv):
             y_pred.append(val)
     return y_pred
 
-
-def EvaluationCross2(model,x,y,model_name,file='',fileCV='',fileGlobal='EvaluationCross/EvaluationCross',fileGlobalCV='EvaluationCross/EvaluationCrossSingle',n_split=5,CV=True):
-    mse = make_scorer(mean_squared_error)
-    mae = make_scorer(mean_absolute_error)
-    r2 = make_scorer(r2_score)
-    mape = make_scorer(mean_absolute_percentage_error)
-
-    TimeSplit = TimeSeriesSplit(n_splits=n_split)
-    #PlotSplit(x,TimeSplit)
-
-    ev = cross_validate(model, x, y, cv=TimeSplit, scoring={'MSE': mse, 'MAE': mae, 'MAPE': mape, 'R2': r2},return_estimator=True)
-
-    ris = {}
-    for key in ev:
-        if 'test' in key:
-            metric = key.split('_')[1].strip()
-            ris[metric] = round(ev[key].mean(), 3)
-            if metric == 'MAPE':
-                ris[metric] = round((ev[key]).mean(), 3)
-            if metric == 'MSE':
-                ris['RMSE'] = round((np.sqrt(ev[key]).mean()), 3)
-    ris = pd.DataFrame(ris.values(), index=ris.keys(), columns=['Evaluation'])
-    EvaluationAll(ris, model_name, fileGlobal)
-
-    if file != '' and CheckPath(f'{path}/{file}'):
-        ris.to_csv(f'{path}/{file}.csv', float_format="%.3f")
-        with open(f'{path}/{file}.txt', 'w') as f:
-            f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
-    else:
-        print(ris)
-
-    if CV:#salvo risultati tutto fold, prova
-         '''y_pred=PredCross(x,models=ev['estimator'],cv=TimeSplit)
-         y=y[-len(y_pred):]
-         ris = Evaluation(y, y_pred, model_name='prova')'''
-         ris={}
-         for key in ev:
-             if 'test' in key:
-                 metric = key.split('_')[1].strip()
-                 ris[metric]=ev[key]
-                 if metric == 'MSE':
-                     ris['RMSE'] = np.round(np.sqrt(ev[key]),3)
-         ris = pd.DataFrame(ris.values(), index=ris.keys(), columns=['CV'+str(i) for i in range(1,len(ris['MSE'])+1)])
-         EvaluationAllSingle(ris, model_name,fileGlobalCV)
-
-         if fileCV!= '' and CheckPath(f'{path}/{fileCV}'):
-            ris.to_csv(f'{path}/{fileCV}.csv', float_format="%.3f")
-            with open(f'{path}/{fileCV}.txt', 'w') as f:
-                f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
-    else:
-        print(ris)
 
 def ManualCV(model,x,y,cv,scaler=MinMaxScaler()):
     ris = {}  # metrics:[metrics cv1,..]
@@ -213,7 +161,6 @@ def EvaluationCross(model,x,y,model_name,file='',fileMean='',fileGlobalMean='Eva
             if key not in ris_mean:
                 ris_mean[key] = []
             ris_mean[key] = sum(ris.loc[key]) / len(ris.loc[key])
-        #print(ris_mean)
 
         ris_mean = pd.DataFrame(ris_mean.values(), index=ris_mean.keys(), columns=['Evaluation'])
 
@@ -282,7 +229,6 @@ def PrepareData(file,lag=3,horizon=1,target='T'):
     #y = np.array(y)
     dates=pd.to_datetime(dates)
     y=pd.Series(y,index=dates)
-    #print(y)
 
     return(x,y)
 
@@ -323,7 +269,6 @@ def SaveGridSearch(param_grid,grid_result,folder=''):#salvo risultati gridsearch
             r=', '.join(map(str,r))
             best[key]=r
     best = pd.DataFrame(best, index=["Best"])
-    #units risulta lista di liste
     for key in d:  # trasformo eventuali liste in stringhe
         for i in range(len(d[key])):
                 if type(d[key][i])==list:
@@ -357,7 +302,7 @@ def ComputeTest(data,test='wilcoxon'):
                     w.append(ttest_ind(val1,val2)[1])
             elif model == model1:
                 w.append(0)
-        r[model1] = w  # modello:valori wil
+        r[model1] = w  # modello:valori
 
     ris = pd.DataFrame(r, index=data.index)
 
@@ -416,8 +361,3 @@ def Ttest(metrics,file='EvaluationCross/Ttest',diag=True):
                 f.write(ris.to_string(header=True, index=True, float_format="%.3f"))
         else:
             return ris
-
-if __name__ == '__main__':
-    x, y = PrepareData("JenaClimate.csv")
-    print(y[:10])
-
