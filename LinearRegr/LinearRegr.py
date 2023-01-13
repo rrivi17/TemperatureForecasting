@@ -1,5 +1,3 @@
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'#tolgo info e warning
 from sklearn.model_selection import train_test_split
 import numpy as np
 from Function import PrepareData,SetArray2DCol,EvaluationCross,Evaluation
