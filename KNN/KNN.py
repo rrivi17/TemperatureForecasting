@@ -9,8 +9,8 @@ if __name__ == '__main__':
     x,y=PrepareData("JenaClimate.csv")
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=0, shuffle=False)
-    x_train,y_train=SetArray2DCol(x_train,y_train)
-    x_test,y_test=SetArray2DCol(x_test,y_test)
+    x_train=SetArray2DCol(x_train)
+    x_test=SetArray2DCol(x_test)
 
     scaler = MinMaxScaler()
     x_train = scaler.fit_transform(x_train)
@@ -25,7 +25,7 @@ if __name__ == '__main__':
     ResidualPlot(y_test, y_pred, file="KNN/Graph/KNNResidualPlot")
     Graph(y_test, y_pred, file="KNN/Graph/KNNRealVSPred")
 
-    x, y = SetArray2DCol(x, y)
+    x = SetArray2DCol(x)
     model=KNeighborsRegressor(n_neighbors=11,p=1,weights='distance')
     model = make_pipeline(MinMaxScaler(), model)
     EvaluationCross(model,x,y,model_name='KNN',file="KNN/Evaluation/KNNEvaluationCross",fileMean="KNN/Evaluation/KNNEvaluationCrossMean")
