@@ -1,5 +1,3 @@
-import os
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'#tolgo info e warning
 import pandas as pd
 import numpy as np
 import datetime as dt
@@ -36,7 +34,6 @@ def ManageNan(df,command):
 if __name__ == '__main__':
     date_parser = lambda x: dt.datetime.strptime(x, "%d.%m.%Y %H:%M:%S")
     df = pd.read_csv(f"{path}/PreProcessing/Dataset/jena_climate_2009_2016.csv", index_col=['Date Time'], parse_dates=['Date Time'],date_parser=date_parser)
-    print('colonne',df.columns)
     df = df.drop("Tpot (K)",axis=1)#,"wv (m/s)","max. wv (m/s)","wd (deg)"])#tolgo temperatura espressa in kelvin e tengo solo quella in Celsius
 
     #ridefinizione nomi colonne
@@ -69,6 +66,6 @@ if __name__ == '__main__':
         #salvo file originale per attuare procedure di preprocessig/exploration
         df.to_csv(f"{path}/PreProcessing/Dataset/JenaClimatePre.csv", float_format="%.3f")
 
-        ##tolgo colonne identificate poco utili per la fase di preprocessing
+        #tolgo colonne identificate poco utili per la fase di preprocessing
         df=df.drop(columns=['wv','max_wv','wd'])
         df.to_csv(f"{path}/JenaClimate.csv", float_format="%.3f")
