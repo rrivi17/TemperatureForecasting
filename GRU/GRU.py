@@ -10,29 +10,8 @@ from tensorflow.keras.layers import Dense, GRU
 from tensorflow.keras.callbacks import EarlyStopping
 from Function import SaveModel,EvaluationCross,Evaluation,Scaler3D
 from scikeras.wrappers import KerasRegressor
-from sklearn.pipeline import make_pipeline
-import numpy as np
-from sklearn.base import TransformerMixin,BaseEstimator
 from sklearn.pipeline import Pipeline
 
-
-
-def build_model2(input_shape,recurrent_activation='selu',optimizer='adam',activation='selu',delta=1):
-    model = Sequential()
-
-    model.add(GRU(units=80, return_sequences=True, input_shape=input_shape,recurrent_activation=recurrent_activation,activation=activation))
-    model.add(GRU(units=60, return_sequences=True,recurrent_activation=recurrent_activation,dropout=0,activation=activation))
-    model.add(GRU(units=140,activation=activation,recurrent_activation=recurrent_activation))
-
-    model.add(Dense(units=1))
-
-    model.summary()
-
-    loss = tf.keras.losses.Huber(delta=delta)
-    model.compile(loss=loss, optimizer=optimizer, metrics=['mean_absolute_error'])
-
-
-    return model
 
 def build_model(input_shape,recurrent_activation='selu',optimizer='adam',activation='selu',delta=1.35):
     model = Sequential()
