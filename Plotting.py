@@ -253,11 +253,11 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
             try:
                 for ax in l:
                     data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
-                              x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568',legend=False)
+                              x=data.columns[i],sharey=True,xlabel='',legend=False)#fontname='Arial',fontcolor='#001568'
                     i+=1
             except:
                 data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,legend=False,
-                          x=data.columns[i],sharey=True,xlabel='',fontname='Arial',fontcolor='#001568')
+                          x=data.columns[i],sharey=True,xlabel='')#fontname='Arial',fontcolor='#001568'
                 i += 1
 
     plt.tight_layout()
