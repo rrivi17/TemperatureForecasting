@@ -1,11 +1,9 @@
 import pandas as pd
-from Plotting import PlotAllColumns, BarhSingle,PlotAllWilcoxon,PlotAllTtest
-from Function import Wilcoxon,Ttest,ComputeTest
+from Plotting import PlotAllColumns,PlotAllWilcoxon,PlotAllTtest
+from Function import Wilcoxon,Ttest
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
-path=sys.path[1]
 import sys
 path=sys.path[1]
 import os
@@ -20,7 +18,6 @@ def CheckPath(file):
 
 
 def CompareMetric(metric,test='Ttest',file=''):
-
     data = pd.read_csv(f'{path}/EvaluationCross/{test}/{metric}.csv', index_col=[0])
     m=pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossMean.csv', index_col=[0])
     m=m.loc[metric]
@@ -57,39 +54,24 @@ def CompareMetric(metric,test='Ttest',file=''):
 
 
 if __name__ == '__main__':
-
     #analisi metriche con hold-out method
     data = pd.read_csv(f'{path}/Evaluation/Evaluation.csv', index_col=[0])
-    #PlotAllColumns(data.T,kind='barh',file='Evaluation/Graph/AllMetrics',col=2)
+    PlotAllColumns(data.T,kind='barh',file='Evaluation/Graph/AllMetrics',col=2)
     metrics = data.index
     models=data.columns
-    #BarhSingle(data, folder='Evaluation/Graph')#bar di tutte le metriche
 
     #analisi metriche con cross validation method
     dataCross = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossMean.csv', index_col=[0])
-    #PlotAllColumns(dataCross.T, kind='barh', file='EvaluationCross/Graph/AllMetricsCross', col=2)
-    #BarhSingle(dataCross, folder='EvaluationCross/Graph')
+    PlotAllColumns(dataCross.T, kind='barh', file='EvaluationCross/Graph/AllMetricsCross', col=2)
 
     #wilcoxon
-    #Wilcoxon(metrics)
-    #PlotAllWilcoxon(metrics)
+    Wilcoxon(metrics)
+    PlotAllWilcoxon(metrics)
 
     #ttest
-    #Ttest(metrics)
-    #PlotAllTtest(metrics)
+    Ttest(metrics)
+    PlotAllTtest(metrics)
 
-    #plot R2 metriche significative
-
-
-    #prova a fare funzione
     #ris=pd.read_csv(f'{path}/EvaluationCross/Ttest/R2.csv', index_col=[0])
 
-
-    #heatmap con 1 e 0 e dove 1 valori medi di r di entrambi? Ry-Rx
-    CompareMetric('R2',test='Ttest',file="EvaluationCross/Graph/CompareR2")
-
-
-
-
-
-
+    CompareMetric('R2',test='Ttest',file="EvaluationCross/Ttest/Graph/CompareR2")
