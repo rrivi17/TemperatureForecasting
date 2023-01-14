@@ -63,6 +63,10 @@ if __name__ == '__main__':
         df['TMax']=MaxT
         df['TMin']=MinT
 
+        #elimino outliers su velocità venti
+        df['max_wv'][df['max_wv'] < -200] = np.mean(df['max_wv'][df['max_wv'] > -200])
+        df['wv'][df['wv'] < -200] = np.mean(df['wv'][df['wv'] > -200])
+
         #salvo file originale per attuare procedure di preprocessig/exploration
         df.to_csv(f"{path}/PreProcessing/Dataset/JenaClimatePre.csv", float_format="%.3f")
 
