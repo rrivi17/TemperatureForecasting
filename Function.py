@@ -308,7 +308,7 @@ def ComputeTest(data,test='wilcoxon'):
 
     return ris
 
-def Wilcoxon(metrics,file='EvaluationCross/Wilcoxon',diag=True):
+def Wilcoxon(metrics,file='',diag=True):
     for metric in metrics:
         data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCross/{metric}.csv', index_col=[0])
         ris=ComputeTest(data,test='wilcoxon')
@@ -316,7 +316,11 @@ def Wilcoxon(metrics,file='EvaluationCross/Wilcoxon',diag=True):
         if file != '' and CheckPath(f'{path}/{file}'): # salva plot
             plt.style.use('seaborn-notebook')
             f, ax = plt.subplots(figsize=(10, 8))
-            plt.title(f'{metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
+            if metric == 'R2':
+                title = '$R^2$'
+            else:
+                title=metric
+            plt.title(f'{title}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
             if diag:
                 ris1 = ris.drop(columns=ris.columns[-1])
                 mask = np.triu((np.ones_like(ris1, dtype=bool)))
@@ -335,7 +339,7 @@ def Wilcoxon(metrics,file='EvaluationCross/Wilcoxon',diag=True):
         else:
             return ris
 
-def Ttest(metrics,file='EvaluationCross/Ttest',diag=True):
+def Ttest(metrics,file='',diag=True):
     for metric in metrics:
         data = pd.read_csv(f'{path}/EvaluationCross/EvaluationCross/{metric}.csv', index_col=[0])
         ris=ComputeTest(data,test='Ttest')
@@ -343,7 +347,11 @@ def Ttest(metrics,file='EvaluationCross/Ttest',diag=True):
         if file != '' and CheckPath(f'{path}/{file}'): # salva plot
             plt.style.use('seaborn-notebook')
             f, ax = plt.subplots(figsize=(10, 8))
-            plt.title(f'{metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
+            if metric == 'R2':
+                title = '$R^2$'
+            else:
+                title=metric
+            plt.title(f'{title}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 20})
             if diag:
                 ris1 = ris.drop(columns=ris.columns[-1])
                 mask = np.triu((np.ones_like(ris1, dtype=bool)))
