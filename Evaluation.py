@@ -1,5 +1,5 @@
 import pandas as pd
-from Plotting import PlotAllColumns,PlotAllWilcoxon,PlotAllTtest
+from Plotting import PlotAllColumns,PlotAllWilcoxon,PlotAllTtest,Barh
 from Function import Wilcoxon,Ttest
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -39,6 +39,10 @@ def CompareMetric(metric,test='Ttest',file=''):
     labels[np.where(labels=='0.0')]='-'
 
     fig,ax=plt.subplots(figsize=(8,6))
+    if metric=='R2':
+        metric='$R^2$'
+
+
     ax.set_title(metric+'$_{x}$'+' - '+metric+'$_{y}$',fontdict={'family': 'Arial', 'color': 'black', 'weight': 'normal', 'size': 20})
     sns.heatmap(ris, mask=np.zeros_like(ris, dtype=bool), cmap=sns.color_palette("vlag", as_cmap=True),
                 square=True, ax=ax,  fmt="",annot=labels)
@@ -56,22 +60,22 @@ def CompareMetric(metric,test='Ttest',file=''):
 if __name__ == '__main__':
     #analisi metriche con hold-out method
     data = pd.read_csv(f'{path}/Evaluation/Evaluation.csv', index_col=[0])
-    PlotAllColumns(data.T,kind='barh',file='Evaluation/Graph/AllMetrics',col=2)
+    Barh(data,folder='Evaluation/Graph')
+    PlotAllColumns(data.T,kind='barh',col=3,file='Evaluation/Graph/AllMetrics')
     metrics = data.index
     models=data.columns
 
     #analisi metriche con cross validation method
     dataCross = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossMean.csv', index_col=[0])
-    PlotAllColumns(dataCross.T, kind='barh', file='EvaluationCross/Graph/AllMetricsCross', col=2)
+    Barh(dataCross,folder='EvaluationCross/Graph')
+    PlotAllColumns(dataCross.T, kind='barh',col=3, file='EvaluationCross/Graph/AllMetricsCross')
 
     #wilcoxon
-    Wilcoxon(metrics)
-    PlotAllWilcoxon(metrics)
+    Wilcoxon(metrics,file='EvaluationCross/Wilcoxon')
+    PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW')
 
     #ttest
-    Ttest(metrics)
-    PlotAllTtest(metrics)
-
-    #ris=pd.read_csv(f'{path}/EvaluationCross/Ttest/R2.csv', index_col=[0])
+    Ttest(metrics,file='EvaluationCross/Ttest')
+    PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest')
 
     CompareMetric('R2',test='Ttest',file="EvaluationCross/Ttest/Graph/CompareR2")
