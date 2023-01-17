@@ -332,7 +332,7 @@ def Graph(y_test,yp_test,file=''):
     else:
         plt.show()
 
-def PlotAllWilcoxon(metrics,file='',title='',col=2,figsize=(15,10)):
+def PlotAllWilcoxon(metrics,file='',title='',col=2,figsize=(17,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -361,8 +361,8 @@ def PlotAllWilcoxon(metrics,file='',title='',col=2,figsize=(15,10)):
         mask = np.triu((np.ones_like(ris, dtype=bool)))
         sns.heatmap(ris[1:], mask=mask[1:], cmap=sns.light_palette("seagreen", as_cmap=True,reverse=True), square=False, ax=ax,annot=True, fmt=".3f")
 
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=12, fontname='Arial')
-        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=12, fontname='Arial')
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=60, fontsize=15, fontname='Arial')
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
 
     plt.subplots_adjust(left=0.145,bottom=0.16,wspace=1,hspace=1,top=0.9)
 
@@ -371,7 +371,7 @@ def PlotAllWilcoxon(metrics,file='',title='',col=2,figsize=(15,10)):
     else:
         plt.show()
 
-def PlotAllTtest(metrics,file='',title='',col=2,figsize=(15,10)):
+def PlotAllTtest(metrics,file='',title='',col=2,figsize=(17,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -400,8 +400,8 @@ def PlotAllTtest(metrics,file='',title='',col=2,figsize=(15,10)):
         sns.heatmap(ris[1:], mask=mask[1:], cmap=sns.light_palette("seagreen", as_cmap=True, reverse=True),
                     square=False, ax=ax, annot=True, fmt=".3f")
 
-        ax.set_xticklabels(ax.get_xticklabels(), rotation=30, fontsize=12, fontname='Arial')
-        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=12, fontname='Arial')
+        ax.set_xticklabels(ax.get_xticklabels(), rotation=60, fontsize=15, fontname='Arial')
+        ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=15, fontname='Arial')
 
     plt.subplots_adjust(left=0.145, bottom=0.16, wspace=1, hspace=1, top=0.9)
 
