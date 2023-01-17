@@ -60,22 +60,22 @@ def CompareMetric(metric,test='Ttest',file=''):
 if __name__ == '__main__':
     #analisi metriche con hold-out method
     data = pd.read_csv(f'{path}/Evaluation/Evaluation.csv', index_col=[0])
-    #Barh(data,folder='Evaluation/Graph')
-    #PlotAllColumns(data.T,kind='barh',col=3,file='Evaluation/Graph/AllMetrics')
+    Barh(data,folder='Evaluation/Graph')
+    PlotAllColumns(data.T,kind='barh',col=3,file='Evaluation/Graph/AllMetrics')
     metrics = data.index
     models=data.columns
 
     #analisi metriche con cross validation method
     dataCross = pd.read_csv(f'{path}/EvaluationCross/EvaluationCrossMean.csv', index_col=[0])
-    #Barh(dataCross,folder='EvaluationCross/Graph')
-    #PlotAllColumns(dataCross.T, kind='barh',col=3, file='EvaluationCross/Graph/AllMetricsCross')
+    Barh(dataCross,folder='EvaluationCross/Graph')
+    PlotAllColumns(dataCross.T, kind='barh',col=3, file='EvaluationCross/Graph/AllMetricsCross')
 
     #wilcoxon
-    #Wilcoxon(metrics,file='EvaluationCross/Wilcoxon')
+    Wilcoxon(metrics,file='EvaluationCross/Wilcoxon')
     PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',col=3)
 
     #ttest
-    #Ttest(metrics,file='EvaluationCross/Ttest')
+    Ttest(metrics,file='EvaluationCross/Ttest')
     PlotAllTtest(metrics,col=3,file='EvaluationCross/Ttest/Graph/AllTtest')
 
-    #CompareMetric('R2',test='Ttest',file="EvaluationCross/Ttest/Graph/CompareR2")
+    CompareMetric('R2',test='Ttest',file="EvaluationCross/Ttest/Graph/CompareR2")
