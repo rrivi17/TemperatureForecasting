@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from Plotting import PlotAllColumns,ScatterMatrix,CorrelationMatrix,ScatterPlot
 import sys
 path=sys.path[1]
@@ -12,7 +11,6 @@ if __name__ == '__main__':
     CorrelationMatrix(df,diag=False,file="PreProcessing/Graph/CorrelationMatrix")
 
     ScatterMatrix(df,file="PreProcessing/Graph/ScatterMatrix")
-    PlotAllColumns(df,kind='hist')
 
     for column in df.columns:
         if column!='T':
