@@ -292,18 +292,17 @@ def Barh(data,folder=''):
     metrics = data.index
 
     for metric in metrics:
-        plt.figure(figsize=(8, 4))
-        #fig,ax=plt.subplots(figsize=(8, 4))
         if metric == 'R2':
             title = '$R^2$'
         else:
             title = metric
-
-        plt.title(f'{title}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
+        fig,ax=plt.subplots(figsize=(8, 4))
+        ax.set_title(title)
+        #plt.title(f'{title}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
         data = data.sort_values(by=[f'{metric}'], axis=1)
         models = data.columns
-        bars = plt.barh(models, width=data.loc[metric])
-        plt.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
+        bars = ax.barh(models, width=data.loc[metric])
+        ax.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
 
         plt.tight_layout()
         if folder != '' and CheckPath(f'{path}/{folder}'):
