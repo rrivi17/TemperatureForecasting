@@ -233,7 +233,6 @@ def trim_axs(nrows,ncols,nfigs):
 
 def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',title=''):
     plt.style.use('seaborn-notebook')
-    plt.figure()
     if len(data.columns)%col==0:
         row=int(len(data.columns) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -245,19 +244,41 @@ def PlotAllColumns(data,target_name='',figsize=(12,8),col=3,file='',kind='line',
     if title != '':
         plt.suptitle(title, fontdict={'color': '#001568', 'weight': 'normal'},fontsize=17,fontname='Arial')
 
-    if target_name=='':
-        bars = data.plot(ax=axs, subplots=True, rot=0, title=list(data.columns), kind=kind,fontsize=8,legend=False)
+    if target_name=='' and kind!='barh':
+        colonne=list(data.columns)
+        for i in range(len(colonne)):
+            if colonne[i]=='R2':
+                colonne[i]='$R^2$'
+        data.plot(ax=axs, subplots=True, rot=0, title=colonne, kind=kind, fontsize=10, legend=False)
+
     else:
         i=0
         for l in axs:
+            if data.columns[i] == 'R2':
+                title = '$R^2$'
+            else:
+                title=data.columns[i]
             try:
                 for ax in l:
-                    data.plot(ax=ax, rot=0, title=data.columns[i], kind=kind, fontsize=8,y=target_name,
-                              x=data.columns[i],sharey=True,xlabel='',legend=False)#fontname='Arial',fontcolor='#001568'
+                    if kind=='barh' and target_name =='':
+                        bars = ax.barh(width=data[data.columns[i]], y=data.index)
+                        ax.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
+                        ax.set_title(title)
+
+                    elif target_name != '':
+                        data.plot(ax=ax, rot=0, title=title, kind=kind, fontsize=8,y=target_name,
+                                      x=data.columns[i],sharey=True,xlabel='',legend=False)#fontname='Arial',fontcolor='#001568'
                     i+=1
+
             except:
-                data.plot(ax=l,  rot=0, title=data.columns[i], kind=kind, fontsize=8, y=target_name,legend=False,
-                          x=data.columns[i],sharey=True,xlabel='')#fontname='Arial',fontcolor='#001568'
+                if kind=='barh' and target_name == '':
+                    bars = l.barh(width=data[data.columns[i]], y=data.index)
+                    l.bar_label(bars, label_type='center', fontsize=15, fontname='Arial', color='white')
+                    l.set_title(title)
+
+                elif target_name != '':
+                    data.plot(ax=l,  rot=0, title=title, kind=kind, fontsize=8, y=target_name,legend=False,
+                                  x=data.columns[i],sharey=True,xlabel='')#fontname='Arial',fontcolor='#001568'
                 i += 1
 
     plt.tight_layout()
@@ -273,8 +294,12 @@ def Barh(data,folder=''):
     for metric in metrics:
         plt.figure(figsize=(8, 4))
         #fig,ax=plt.subplots(figsize=(8, 4))
+        if metric == 'R2':
+            title = '$R^2$'
+        else:
+            title = metric
 
-        plt.title(f'{metric}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
+        plt.title(f'{title}', fontdict={'family': 'Arial', 'color': '#001568', 'weight': 'normal', 'size': 15})
         data = data.sort_values(by=[f'{metric}'], axis=1)
         models = data.columns
         bars = plt.barh(models, width=data.loc[metric])
@@ -307,7 +332,7 @@ def Graph(y_test,yp_test,file=''):
     else:
         plt.show()
 
-def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='',col=2,figsize=(15,10)):
+def PlotAllWilcoxon(metrics,file='',title='',col=2,figsize=(15,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -326,7 +351,11 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='',
         ris = ComputeTest(data, test='wilcoxon')
 
         ax = axs[n_ax]
-        ax.set_title(f'{metric}',fontdict={'color': '#001568','fontfamily':'Arial'})
+        if metric == 'R2':
+            title = '$R^2$'
+        else:
+            title = metric
+        ax.set_title(f'{title}',fontdict={'color': '#001568','fontfamily':'Arial'})
 
         ris = ris.drop(columns=ris.columns[-1])
         mask = np.triu((np.ones_like(ris, dtype=bool)))
@@ -342,7 +371,7 @@ def PlotAllWilcoxon(metrics,file='EvaluationCross/Wilcoxon/Graph/AllW',title='',
     else:
         plt.show()
 
-def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='',col=2,figsize=(15,10)):
+def PlotAllTtest(metrics,file='',title='',col=2,figsize=(15,10)):
     if len(metrics) % col==0:
         row=int( len(metrics) / col)
         fig1, axs = plt.subplots(row, col, figsize=figsize, constrained_layout=False, tight_layout=True)
@@ -360,7 +389,11 @@ def PlotAllTtest(metrics,file='EvaluationCross/Ttest/Graph/AllTtest',title='',co
         ris = ComputeTest(data, test='Ttest')
 
         ax = axs[n_ax]
-        ax.set_title(f'{metric}', fontdict={'color': '#001568', 'fontfamily': 'Arial'})
+        if metric == 'R2':
+            title = '$R^2$'
+        else:
+            title = metric
+        ax.set_title(f'{title}', fontdict={'color': '#001568', 'fontfamily': 'Arial'})
 
         ris = ris.drop(columns=ris.columns[-1])
         mask = np.triu((np.ones_like(ris, dtype=bool)))
