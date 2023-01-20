@@ -10,8 +10,8 @@ if __name__ == '__main__':
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=0, shuffle=False)
     model = LinearRegression()
-    x_train, y_train = SetArray2DCol(x_train, y_train)
-    x_test, y_test = SetArray2DCol(x_test, y_test)
+    x_train = SetArray2DCol(x_train)
+    x_test = SetArray2DCol(x_test)
 
     model.fit(x_train,y_train)
     y_pred=model.predict(x_test)
