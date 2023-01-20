@@ -26,7 +26,6 @@ def build_model(input_shape,recurrent_activation='selu',optimizer='adam',activat
     loss = tf.keras.losses.Huber(delta=delta)
     model.compile(loss=loss, optimizer=optimizer, metrics=['mean_absolute_error'])
 
-
     return model
 
 
@@ -36,9 +35,6 @@ def fit_model(x_train,y_train,epochs=100, batch_size=25):#25,32
 
     SaveModel(model,model_name="GRU")
     return history
-
-
-
 
 
 
